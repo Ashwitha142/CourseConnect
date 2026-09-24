@@ -1,6 +1,5 @@
 const Course = require('../models/course')
 
-
 async function getCourses(req, res) {
     try {
         const courses = await Course.find()
@@ -79,38 +78,56 @@ async function deleteCourses(req, res) {
             })
         }
 
+        // if (
+        //     req.user.role !== "instructor" &&
+        //     (!course.instructor || !course.instructor.equals(req.user_id))
+        // ) {
+        //     return res.status(403).send({
+        //         message: "you can only delete courses you created"
+        //     })
+        // }
+
+        await course.deleteOne({_id:id})
+
         return res.status(200).send({
-            message: "Course deleted successfully"
+            message : "Course deleted"
         })
-
-    } catch (error) {
-
+    }catch(error){
         return res.status(500).send({
             message: "Unable to delete course"
         })
     }
 }
 
-
 async function updateCourses(req, res) {
     try {
 
         const { id } = req.params
 
-        const course = await Course.findByIdAndUpdate(
-            id,
-            req.body,
-            { new: true }
-        )
-
-        if (!course) {
+        const course = await Course.findById(id)
+           if(!course){
             return res.status(404).send({
-                message: "Course not found"
+                message:"Course not found"
             })
+           }
+           const editableFields=[
+            "title",
+            "description",
+            "category",
+            "level",
+            "price",
+            "duration"
+        ]
+
+       editableFields.forEach((fields)=>{
+        if(req.body[field] !== undefined){
+            course[field]=req.body[field]
         }
-
-        return res.status(200).send(course)
-
+       })
+       await course.save()
+       return res.status(200).send({
+        message:"Course Updated"
+       })
     } catch (error) {
 
         return res.status(500).send({
@@ -129,7 +146,7 @@ async function getCoursesById(req, res) {
 
         if (!course) {
             return res.status(404).send({
-                message: "Course not found"
+                message: "Bad Request:Course not found"
             })
         }
 
@@ -137,9 +154,7 @@ async function getCoursesById(req, res) {
 
     } catch (error) {
 
-        return res.status(500).send({
-            message: "Unable to access course"
-        })
+       console.log("Hello")
     }
 }
 
